@@ -1,0 +1,4 @@
+Flask
+python-neutronclient
+python-novaclient
+WTForms
