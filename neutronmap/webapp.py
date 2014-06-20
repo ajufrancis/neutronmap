@@ -34,17 +34,16 @@ def topology():
                             status=200)
         except Exception as e:
             try:
-                # We handle Neutron client exceptions first
+                # Handling of Neutron client exceptions first
                 error = json.loads(e.message).pop('error')
                 status = error.get('code', 500)
             except ValueError:
-                # Wrapping Nova client or regular exceptions
+                # Wrap Nova client and other exceptions
                 # into a serializable object
                 status = e.http_status if hasattr(e, 'http_status') else 500
                 error = {'title': type(e).__name__,
                          'message': str(e),
                          'code': status }
-
             return Response(response=json.dumps(error),
                             mimetype='application/json',
                             status=status)

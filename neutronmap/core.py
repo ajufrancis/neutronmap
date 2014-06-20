@@ -106,8 +106,8 @@ class Port(object):
         self.mac_address = port.get('mac_address')
         self.fixed_ips = port.get('fixed_ips')
 
-        # Attributes used to map the port to the relevant device,
-        # and to determine the vif name
+        # Attributes used to map the port to the
+        # relevant device, and to set the vif name
         self.device_id = port.get('device_id')
         self.device_owner = port.get('device_owner')
 
@@ -232,8 +232,6 @@ class LogicalTopology(Topology):
         nodes = []
         links = []
 
-        # The base elements of the graph are compute instances,
-        # routers and networks
         for network in self._data['networks']:
             ids.append(network.id)
             nodes.append(network.to_dict())
