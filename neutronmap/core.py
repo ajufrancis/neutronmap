@@ -119,8 +119,8 @@ class Port(object):
                      'network id: ' + self.network_id,
                      'mac: ' + self.mac_address])
 
-        for fixed_ip in self.fixed_ips:
-            text.append('ip: ' + fixed_ip['ip_address'])
+        ips = [fixed_ip['ip_address'] for fixed_ip in self.fixed_ips]
+        text.append('ips: ' + ', '.join(ips))
 
         return '<br>'.join(text)
 
@@ -141,7 +141,7 @@ class NovaInstance(object):
     def __init__(self, instance):
         self.id = instance.id
         self.name = instance.name
-        self.networks = instance.networks
+        self.addresses = instance.addresses
         self.ports = []
 
     def to_dict(self):
@@ -156,9 +156,17 @@ class NovaInstance(object):
         text.extend(['<strong>Nova instance:</strong>',
                      'id: ' + self.id,
                      'name: ' + self.name])
+        # Floating ip list
+        ips = []
+        for net in self.addresses:
+            # Get an address list per network
+            addresses = self.addresses[net]
+            [ips.append('%s (%s)' % (a['addr'], a['OS-EXT-IPS-MAC:mac_addr']))
+             for a in addresses if a['OS-EXT-IPS:type'] == 'floating']
 
         return ('<br>'.join(text) + '<br>' +
-                '<br>'.join([x.text for x in self.ports]))
+                '<br>'.join([x.text for x in self.ports]) + '<br>' +
+                '<strong>Floating ips:</strong><br>' + '<br>'.join(ips))
 
 
 class Topology(object):
