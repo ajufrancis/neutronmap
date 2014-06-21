@@ -23,20 +23,20 @@ textarea {
 
 .node {
   cursor: pointer;
-  stroke: #191919;
-  stroke-width: 1.5px;
+  stroke: #d1d1e0;
+  stroke-width: 4px;
   stroke-opacity: 0.6;
 }
 
 .node:hover {
   stroke: #ffcc00;
-  stroke-width: 2.5px;
+  stroke-width: 3px;
   stroke-opacity: 1.0;
 }
 
 .highlighted {
   stroke: #ffcc00;
-  stroke-width: 2.5px;
+  stroke-width: 3px;
   stroke-opacity: 1.0;
 }
 
