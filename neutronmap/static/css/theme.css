@@ -23,9 +23,6 @@ textarea {
 
 .node {
   cursor: pointer;
-  stroke: #d1d1e0;
-  stroke-width: 4px;
-  stroke-opacity: 0.6;
 }
 
 .node:hover {
@@ -38,6 +35,50 @@ textarea {
   stroke: #ffcc00;
   stroke-width: 3px;
   stroke-opacity: 1.0;
+}
+
+.external-inner {
+  fill: #ff99ff;
+  stroke: #663300;
+  stroke-width: 2px;
+}
+
+.external-outer {
+  fill: #ff99ff;
+  opacity: 0.2;
+}
+
+.network-inner {
+  fill: #3366ff;
+  stroke: #3333cc;
+  stroke-width: 2px;
+}
+
+.network-outer {
+  fill: #3366ff;
+  opacity: 0.2;
+}
+
+.router-inner {
+  fill: #a329cc;
+  stroke: #ff66ff;
+  stroke-width: 2px;
+}
+
+.router-outer {
+  fill: #a329cc;
+  opacity: 0.2;
+}
+
+.vm-inner {
+  fill: #ff0000;
+  stroke: #000000;
+  stroke-width: 2px;
+}
+
+.vm-outer {
+  fill: #ff0000;
+  opacity: 0.2;
 }
 
 .link {
