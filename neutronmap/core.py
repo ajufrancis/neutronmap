@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import os
-import sys
 
 from abc import ABCMeta, abstractmethod
 from flask import current_app as app
