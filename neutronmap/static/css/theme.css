@@ -26,14 +26,14 @@ textarea {
 }
 
 .node:hover {
-  stroke: #ffcc00;
-  stroke-width: 3px;
+  stroke: #000000;
+  stroke-width: 4px;
   stroke-opacity: 1.0;
 }
 
 .highlighted {
-  stroke: #ffcc00;
-  stroke-width: 3px;
+  stroke: #000000;
+  stroke-width: 4px;
   stroke-opacity: 1.0;
 }
 
@@ -67,6 +67,17 @@ textarea {
 
 .router-outer {
   fill: #a329cc;
+  opacity: 0.2;
+}
+
+.dhcp-inner {
+  fill: #ffcc00;
+  stroke: #663300;
+  stroke-width: 2px;
+}
+
+.dhcp-outer {
+  fill: #ffcc00;
   opacity: 0.2;
 }
 

@@ -75,9 +75,9 @@
 
     var force = d3.layout.force()
         .size([width, height])
-        .charge(-200)
-        /*.friction(0.75)*/
-        .linkDistance(60);
+        .charge(-1000)
+        .friction(0.8)
+        .linkDistance(50);
 
     var svg = d3.select("#topology").append("svg")
         .attr("width", width)

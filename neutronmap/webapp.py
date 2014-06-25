@@ -43,7 +43,7 @@ def topology():
                 status = e.http_status if hasattr(e, 'http_status') else 500
                 error = {'title': type(e).__name__,
                          'message': str(e),
-                         'code': status }
+                         'code': status}
             return Response(response=json.dumps(error),
                             mimetype='application/json',
                             status=status)

@@ -135,6 +135,42 @@ class Port(object):
         return prefixes[self.device_owner] + self.id[:11]
 
 
+class DhcpPort(object):
+    """A graph node that represents the DHCP device binded to a subnet."""
+
+    def __init__(self, port):
+        self.id = port.get('id')
+        self.network_id = port.get('network_id')
+        self.mac_address = port.get('mac_address')
+        self.fixed_ips = port.get('fixed_ips')
+        self.device_id = port.get('device_id')
+
+    def to_dict(self):
+        d = {}
+        d['type'] = 'dhcp'
+        d['text'] = self.text
+        return d
+
+    @property
+    def text(self):
+        text = []
+        text.extend(['<strong>DHCP device:</strong>',
+                     'id: ' + self.device_id,
+                     '<strong>Interface:</strong>',
+                     'name: ' + self.vif,
+                     'network id: ' + self.network_id,
+                     'mac: ' + self.mac_address])
+
+        ips = [fixed_ip['ip_address'] for fixed_ip in self.fixed_ips]
+        text.append('ips: ' + ', '.join(ips))
+
+        return '<br>'.join(text)
+
+    @property
+    def vif(self):
+        return 'tap' + self.id[:11]
+
+
 class NovaInstance(object):
     """A graph node that represents a compute instance."""
 
@@ -183,23 +219,28 @@ class Topology(object):
     def _build(self):
         """Extract data and map the relevant elements together."""
 
-        # Network data
+        # Networks
         networks = self._neutron.list_networks().get('networks')
         self._data['networks'] = [Network(item) for item in networks]
 
-        # Subnet data
+        # Subnets
         subnets = self._neutron.list_subnets().get('subnets')
         self._data['subnets'] = [Subnet(item) for item in subnets]
 
-        # Router data
+        # Routers
         routers = self._neutron.list_routers().get('routers')
         self._data['routers'] = [Router(item) for item in routers]
 
-        # Port data
+        # Ports
         ports = self._neutron.list_ports().get('ports')
         self._data['ports'] = [Port(item) for item in ports]
 
-        # Nova data
+        # DHCP devices
+        self._data['dhcp_ports'] = \
+            [DhcpPort(item) for item in ports
+             if item.get('device_owner') == 'network:dhcp']
+
+        # Nova instances
         vms = self._nova.servers.list()
         self._data['vms'] = [NovaInstance(item) for item in vms]
 
@@ -252,6 +293,10 @@ class LogicalTopology(Topology):
             ids.append(vm.id)
             nodes.append(vm.to_dict())
 
+        for dhcp_port in self._data['dhcp_ports']:
+            ids.append(dhcp_port.device_id)
+            nodes.append(dhcp_port.to_dict())
+
         # For each router with an external gateway, we
         # add a link toward the external network
         for router in self._data['routers']:
@@ -260,10 +305,10 @@ class LogicalTopology(Topology):
                 target = ids.index(router.gateway.get('network_id'))
                 links.append({'source': source, 'target': target})
 
-        # Links between compute instances and networks,
-        # or routers and networks
+        # Links between networks and devices
         for port in self._data['ports']:
             if port.device_owner in ('compute:None',
+                                     'network:dhcp',
                                      'network:router_interface'):
                 source = ids.index(port.device_id)
                 target = ids.index(port.network_id)
