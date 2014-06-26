@@ -142,7 +142,7 @@
         d3.select(this).classed({"highlighted": true});
         $("#hidden").empty()
             .append($('<h3>Element details</h3>'))
-            .append($('<p>' + d.text + '</p>'));
+            .append($('<p>' + d.html + '</p>'));
         $("#hidden").show();
     }
     </script>

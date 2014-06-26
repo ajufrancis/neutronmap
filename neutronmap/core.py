@@ -20,19 +20,19 @@ class Network(object):
     def to_dict(self):
         d = {}
         d['type'] = 'external' if self.router_external else 'network'
-        d['text'] = self.text
+        d['html'] = self.html
         return d
 
     @property
-    def text(self):
-        text = []
-        text.extend(['<strong>Network:</strong>',
+    def html(self):
+        html = []
+        html.extend(['<strong>Network:</strong>',
                      'id: ' + self.id,
                      'name: ' + self.name,
                      'router external: ' + str(self.router_external)])
 
-        return ('<br>'.join(text) + '<br>' +
-                '<br>'.join([x.text for x in self.subnets]))
+        return ('<br>'.join(html) + '<br>' +
+                '<br>'.join([s.html for s in self.subnets]))
 
 
 class Subnet(object):
@@ -50,19 +50,19 @@ class Subnet(object):
         self.network_id = subnet.get('network_id')
 
     @property
-    def text(self):
-        text = []
-        text.extend(['<strong>Subnet:</strong>',
+    def html(self):
+        html = []
+        html.extend(['<strong>Subnet:</strong>',
                      'id: ' + self.id,
                      'name: ' + self.name,
                      'cidr: ' + self.cidr,
                      'gateway ip: ' + self.gateway])
 
         for pool in self.pools:
-            text.append('pool: ' + pool['start'] + '/' + pool['end'])
-        text.extend(['dns: ' + ns for ns in self.nameservers])
+            html.append('pool: ' + pool['start'] + '/' + pool['end'])
+        html.extend(['dns: ' + ns for ns in self.nameservers])
 
-        return '<br>'.join(text)
+        return '<br>'.join(html)
 
 
 class Router(object):
@@ -77,22 +77,22 @@ class Router(object):
     def to_dict(self):
         d = {}
         d['type'] = 'router'
-        d['text'] = self.text
+        d['html'] = self.html
         return d
 
     @property
-    def text(self):
-        text = []
-        text.extend(['<strong>Router:</strong>',
+    def html(self):
+        html = []
+        html.extend(['<strong>Router:</strong>',
                      'id: ' + self.id,
                      'name: ' + self.name])
         if self.gateway:
-            text.extend(['<strong>External gateway info:</strong>',
+            html.extend(['<strong>External gateway info:</strong>',
                          'network id: ' + self.gateway['network_id'],
                          'enable snat: ' + str(self.gateway['enable_snat'])])
 
-        return ('<br>'.join(text) + '<br>' +
-                '<br>'.join([x.text for x in self.ports]))
+        return ('<br>'.join(html) + '<br>' +
+                '<br>'.join([p.html for p in self.ports]))
 
 
 class Port(object):
@@ -110,17 +110,17 @@ class Port(object):
         self.device_owner = port.get('device_owner')
 
     @property
-    def text(self):
-        text = []
-        text.extend(['<strong>Interface:</strong>',
+    def html(self):
+        html = []
+        html.extend(['<strong>Interface:</strong>',
                      'name: ' + self.vif,
                      'network id: ' + self.network_id,
                      'mac: ' + self.mac_address])
 
         ips = [fixed_ip['ip_address'] for fixed_ip in self.fixed_ips]
-        text.append('ips: ' + ', '.join(ips))
+        html.append('ips: ' + ', '.join(ips))
 
-        return '<br>'.join(text)
+        return '<br>'.join(html)
 
     @property
     def vif(self):
@@ -146,13 +146,13 @@ class DhcpPort(object):
     def to_dict(self):
         d = {}
         d['type'] = 'dhcp'
-        d['text'] = self.text
+        d['html'] = self.html
         return d
 
     @property
-    def text(self):
-        text = []
-        text.extend(['<strong>DHCP device:</strong>',
+    def html(self):
+        html = []
+        html.extend(['<strong>DHCP device:</strong>',
                      'id: ' + self.device_id,
                      '<strong>Interface:</strong>',
                      'name: ' + self.vif,
@@ -160,9 +160,9 @@ class DhcpPort(object):
                      'mac: ' + self.mac_address])
 
         ips = [fixed_ip['ip_address'] for fixed_ip in self.fixed_ips]
-        text.append('ips: ' + ', '.join(ips))
+        html.append('ips: ' + ', '.join(ips))
 
-        return '<br>'.join(text)
+        return '<br>'.join(html)
 
     @property
     def vif(self):
@@ -181,13 +181,13 @@ class NovaInstance(object):
     def to_dict(self):
         d = {}
         d['type'] = 'vm'
-        d['text'] = self.text
+        d['html'] = self.html
         return d
 
     @property
-    def text(self):
-        text = []
-        text.extend(['<strong>Nova instance:</strong>',
+    def html(self):
+        html = []
+        html.extend(['<strong>Nova instance:</strong>',
                      'id: ' + self.id,
                      'name: ' + self.name])
         # Floating ip list
@@ -198,8 +198,8 @@ class NovaInstance(object):
             [ips.append('%s (%s)' % (a['addr'], a['OS-EXT-IPS-MAC:mac_addr']))
              for a in addresses if a['OS-EXT-IPS:type'] == 'floating']
 
-        return ('<br>'.join(text) + '<br>' +
-                '<br>'.join([x.text for x in self.ports]) + '<br>' +
+        return ('<br>'.join(html) + '<br>' +
+                '<br>'.join([p.html for p in self.ports]) + '<br>' +
                 '<strong>Floating ips:</strong><br>' + '<br>'.join(ips))
 
 
