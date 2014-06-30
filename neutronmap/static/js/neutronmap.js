@@ -108,7 +108,7 @@ $(function() {
                     dataType: "text",
                     success: function(data) {
                         $.templates({template: data});
-                        $("#hidden").empty().html(
+                        $("#hidden").html(
                             $.render.template(e)
                         );
                     }
