@@ -5,6 +5,7 @@ from flask import Flask, json, render_template, request, Response
 from forms import AuthenticationForm
 from core import LogicalTopology
 
+
 app = Flask(__name__)
 app.config.from_object('config')
 
@@ -13,6 +14,37 @@ app.config.from_object('config')
 def index():
     """Application entry point."""
     return render_template('index.html')
+
+
+@app.route('/exception', methods=['GET'])
+def exception():
+    """JSRender template to display exceptions."""
+    return app.send_static_file('js/exception.js')
+
+
+@app.route('/network', methods=['GET'])
+@app.route('/external', methods=['GET'])
+def network():
+    """JSRender template to display Neutron network details."""
+    return app.send_static_file('js/network.js')
+
+
+@app.route('/router', methods=['GET'])
+def router():
+    """JSRender template to display Neutron router details."""
+    return app.send_static_file('js/router.js')
+
+
+@app.route('/dhcp', methods=['GET'])
+def dhcp():
+    """JSRender template to display Neutron DHCP device details."""
+    return app.send_static_file('js/dhcp.js')
+
+
+@app.route('/vm', methods=['GET'])
+def vm():
+    """JSRender template to display Nova compute instance details."""
+    return app.send_static_file('js/vm.js')
 
 
 @app.route('/topology', methods=['POST'])
@@ -34,7 +66,7 @@ def topology():
                             status=200)
         except Exception as e:
             try:
-                # Handling of Neutron client exceptions first
+                # Handle Neutron client exceptions first
                 error = json.loads(e.message).pop('error')
                 status = error.get('code', 500)
             except ValueError:
