@@ -249,7 +249,8 @@ class LogicalTopology(Topology):
             if port.device_owner in ('compute:None',
                                      'network:dhcp',
                                      'network:router_interface'):
-                # Target object may not belong to the current user
+                # The current user may not have the required
+                # permissions to see the target object
                 if port.device_id in ids:
                     source = ids.index(port.device_id)
                     target = ids.index(port.network_id)
