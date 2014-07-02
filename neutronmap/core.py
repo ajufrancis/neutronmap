@@ -249,9 +249,11 @@ class LogicalTopology(Topology):
             if port.device_owner in ('compute:None',
                                      'network:dhcp',
                                      'network:router_interface'):
-                source = ids.index(port.device_id)
-                target = ids.index(port.network_id)
-                links.append({'source': source, 'target': target})
+                # Target object may not belong to the current user
+                if port.device_id in ids:
+                    source = ids.index(port.device_id)
+                    target = ids.index(port.network_id)
+                    links.append({'source': source, 'target': target})
 
         return json.dumps({'nodes': nodes, 'links': links})
 
