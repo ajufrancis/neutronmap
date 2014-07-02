@@ -16,37 +16,6 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/exception', methods=['GET'])
-def exception():
-    """JSRender template to display exceptions."""
-    return app.send_static_file('js/exception.js')
-
-
-@app.route('/network', methods=['GET'])
-@app.route('/external', methods=['GET'])
-def network():
-    """JSRender template to display Neutron network details."""
-    return app.send_static_file('js/network.js')
-
-
-@app.route('/router', methods=['GET'])
-def router():
-    """JSRender template to display Neutron router details."""
-    return app.send_static_file('js/router.js')
-
-
-@app.route('/dhcp', methods=['GET'])
-def dhcp():
-    """JSRender template to display Neutron DHCP device details."""
-    return app.send_static_file('js/dhcp.js')
-
-
-@app.route('/vm', methods=['GET'])
-def vm():
-    """JSRender template to display Nova compute instance details."""
-    return app.send_static_file('js/vm.js')
-
-
 @app.route('/topology', methods=['POST'])
 def topology():
     """Returns a JSON representation of a Neutron topology."""
