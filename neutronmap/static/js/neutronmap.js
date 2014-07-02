@@ -195,7 +195,7 @@ $.templates({
         '    mac: {{:mac_address}}<br/>' +
         '    ips:' +
         '    {{for ips ~count=ips.length}}' +
-        '      {{:}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}' +
+        '      {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}' +
         '    {{/for}}' +
         '  {{/for}}' +
         '  <strong>Floating ips:</strong><br/>' +
