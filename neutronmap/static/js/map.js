@@ -1,32 +1,33 @@
 // d3.js code to generate the Neutron topology graph
 
-var width = 825,
-    height = 560,
-    root;
-
-var force = d3.layout.force()
-    .size([width, height])
-    .charge(-1000)
-    .friction(0.8)
-    .linkDistance(50);
-
-var svg = d3.select("#topology").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+var aspect = 0.5;
+var svg;
 
 function update(data) {
-    d3.select("#topology > svg").remove();
+    var html = $.templates("#map").render();
+    $("#content").empty().html(html);
 
-    var newsvg = d3.select("#topology").append("svg")
+    var width = $("#topology").width();
+    var height = width * aspect;
+
+    var force = d3.layout.force()
+        .size([width, height])
+        .charge(-1000)
+        .friction(0.8)
+        .linkDistance(50);
+
+    svg = d3.select("#topology").append("svg")
+        .attr("preserveAspectRatio", "xMinYMin")
+        .attr("viewBox", "0 0 " + width + " " + height)
         .attr("width", width)
         .attr("height", height);
 
-    var link = newsvg.selectAll(".link")
+    var link = svg.selectAll(".link")
         .data(data.links)
         .enter().append("line")
         .attr("class", "link");
 
-    var node = newsvg.selectAll(".node")
+    var node = svg.selectAll(".node")
         .data(data.nodes)
         .enter().append("g")
         .attr("class", "node")
@@ -56,9 +57,14 @@ function update(data) {
     });
 }
 
+$(window).resize(function() {
+    var width = $("#topology").width();
+    svg.attr("width", width);
+    svg.attr("height", width * aspect);
+});
+
 
 // Get a specific size for each network element
-
 function size(d) {
     var sizes = [];
     sizes["external"] = 12000;
@@ -71,30 +77,10 @@ function size(d) {
 
 
 // Display node info on dblclick.
-
 function dblclick(d) {
     d3.selectAll(".node").classed({"highlighted": false});
     d3.select(this).classed({"highlighted": true});
     var html = $.templates("#" + d.type).render(d);
-    $("#hidden").empty().html(html);
-    $("#hidden").show();
+    $("#details").empty().html(html);
+    $("#details").show();
 }
-
-
-// Authentication form submission
-
-$(function() {
-    $("form").on("submit", function(event) {
-        event.preventDefault();
-        $("#hidden").empty();
-        var data = $(this).serialize();
-        $.post($SCRIPT_ROOT + '/topology', data, update, "json")
-            .fail(function(jqXHR, textStatus, errorThrown) {
-                var e = jqXHR.responseJSON;
-                var html = $.templates("#exception").render(e);
-                $("#hidden").html(html);
-                $("#hidden").show();
-            });
-        $("form")[0].reset();
-    });
-});
