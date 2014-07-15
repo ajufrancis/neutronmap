@@ -12,16 +12,22 @@
       .center-block {float: none;}
     </style>
   </head>
-  <body role="document">
-    <div class="container-fluid theme-showcase" role="main">
-      <div class="well">
-        <h1>Neutron Map</h1>
-        <p>A tool to visualize various Neutron topologies.</p>
+  <body>
+    <div class="container-fluid">
+      <div class="navbar navbar-default">
+        <div class="navbar-header">
+          <div class="navbar-brand">Neutron Map</div>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="{{ url_for('index') }}">Home</a></li>
+          </ul>
+        </div>
       </div>
       <div class="row" id="content">
         <div class="col-md-3 center-block" style="padding-top: 30px;">
           <h3>Authentication</h3>
-          <form role="form">
+          <form>
             <div class="form-group">
               <input type="text" class="form-control" name="username" placeholder="Username" required>
             </div>

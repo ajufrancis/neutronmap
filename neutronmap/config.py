@@ -1,2 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# Application debug mode
 DEBUG = False
-JSONIFY_PRETTYPRINT_REGULAR = False
+
+# Application version
+VERSION = '0.1'
