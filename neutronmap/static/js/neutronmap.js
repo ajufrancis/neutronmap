@@ -1,6 +1,6 @@
 // d3.js code to generate the Neutron topology graph
 
-var aspect = 0.5;
+var aspect = 0.6;
 var svg;
 
 function update(data) {
@@ -82,5 +82,4 @@ function dblclick(d) {
     d3.select(this).classed({"highlighted": true});
     var html = $.templates("#" + d.type).render(d);
     $("#details").empty().html(html);
-    $("#details").show();
 }
