@@ -67,8 +67,8 @@ $(window).resize(function() {
 // Get a specific size for each network element
 function size(d) {
     var sizes = [];
-    sizes["external"] = 12000;
-    sizes["network"] = 12000;
+    sizes["external"] = 10000;
+    sizes["network"] = 10000;
     sizes["router"] = 8000;
     sizes["dhcp"] = 6000;
     sizes["vm"] = 6000;
