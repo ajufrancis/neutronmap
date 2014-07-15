@@ -5,20 +5,6 @@ body {
   padding-right: 30px;
 }
 
-textarea {
-  resize: none;
-}
-
-.theme-dropdown .dropdown-menu {
-  position: static;
-  display: block;
-  margin-bottom: 20px;
-}
-
-.theme-showcase > p > .btn {
-  margin: 5px 0;
-}
-
 .alert {
   margin: 15px 0;
 }
