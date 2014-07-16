@@ -41,7 +41,7 @@ def topology():
             except ValueError:
                 # Wrap Nova client and other exceptions
                 # into a serializable object
-                status = e.http_status if hasattr(e, 'http_status') else 500
+                status = getattr(e, 'http_status', 500)
                 error = {'title': type(e).__name__,
                          'message': str(e),
                          'code': status}
