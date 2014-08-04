@@ -4,7 +4,7 @@ var aspect = 0.6;
 var svg;
 
 function update(data) {
-    var html = $.templates("#map").render();
+    var html = $.templates("#mapTemplate").render();
     $("#content").empty().html(html);
 
     var width = $("#topology").width();
@@ -80,6 +80,6 @@ function size(d) {
 function dblclick(d) {
     d3.selectAll(".node").classed({"highlighted": false});
     d3.select(this).classed({"highlighted": true});
-    var html = $.templates("#" + d.type).render(d);
+    var html = $.templates("#" + d.type + "Template").render(d);
     $("#details").empty().html(html);
 }

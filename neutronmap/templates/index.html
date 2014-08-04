@@ -63,14 +63,19 @@
           $.post($SCRIPT_ROOT + '/topology', data, update, "json")
             .fail(function(jqXHR, textStatus, errorThrown) {
               var exception = jqXHR.responseJSON;
-              var html = $.templates("#exception").render(exception);
+              var html = $.templates("#exceptionTemplate").render(exception);
               $("#error").empty().html(html);
             });
         });
       });
     </script>
+
     {% raw %}
-    <script id="exception" type="text/x-jsrender">
+
+    <!-- JsRender templates -->
+
+    <!-- Manage backend exceptions -->
+    <script id="exceptionTemplate" type="text/x-jsrender">
       <div class="alert alert-danger alert-dismissable">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         <strong>Title:</strong> {{:title}}<br/>
@@ -78,7 +83,9 @@
         <strong>Code:</strong> {{:code}}<br/>
       </div>
     </script>
-    <script id="map" type="text/x-jsrender">
+
+    <!-- Neutron topology map -->
+    <script id="mapTemplate" type="text/x-jsrender">
       <div class="col-md-4">
         <div id="details"></div>
       </div>
@@ -88,7 +95,9 @@
         </div>
       </div>
     </script>
-    <script id="external" type="text/x-jsrender">
+
+    <!-- Display details for a Neutron external network -->
+    <script id="externalTemplate" type="text/x-jsrender">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">Element details</h3>
@@ -114,7 +123,9 @@
         </div>
       </div>
     </script>
-    <script id="network" type="text/x-jsrender">
+
+    <!-- Display details for a Neutron network -->
+    <script id="networkTemplate" type="text/x-jsrender">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">Element details</h3>
@@ -140,7 +151,9 @@
         </div>
       </div>
     </script>
-    <script id="router" type="text/x-jsrender">
+
+    <!-- Display details for a Neutron router -->
+    <script id="routerTemplate" type="text/x-jsrender">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">Element details</h3>
@@ -167,7 +180,9 @@
         </div>
       </div>
     </script>
-    <script id="dhcp" type="text/x-jsrender">
+
+    <!-- Display details for a Neutron DHCP agent -->
+    <script id="dhcpTemplate" type="text/x-jsrender">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">Element details</h3>
@@ -186,7 +201,9 @@
         </div>
       </div>
     </script>
-    <script id="vm" type="text/x-jsrender">
+
+    <!-- Display details for a Nova instance -->
+    <script id="vmTemplate" type="text/x-jsrender">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">Element details</h3>
@@ -218,6 +235,8 @@
         </div>
       </div>
     </script>
+
     {% endraw %}
+
   </body>
 </html>
