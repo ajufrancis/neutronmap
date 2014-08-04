@@ -205,14 +205,16 @@
               {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
             {{/for}}
           {{/for}}
-          <strong>Floating ips:</strong><br/>
-          {{for floating_ips}}
-            {{props}}
-              {{for prop ~key=key}}
-                {{:#data[0]}} - {{:#data[1]}} ({{:~key}})<br/>
-              {{/for}}
-            {{/props}}
-          {{/for}}
+          {{if floating_ips}}
+            <strong>Floating ips:</strong><br/>
+            {{for floating_ips}}
+              {{props}}
+                {{for prop ~key=key}}
+                  {{:#data[0]}} - {{:#data[1]}} ({{:~key}})<br/>
+                {{/for}}
+              {{/props}}
+            {{/for}}
+          {{/if}}
         </div>
       </div>
     </script>

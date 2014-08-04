@@ -132,15 +132,16 @@ class NovaInstance(object):
         d['type'] = 'vm'
 
         # Floating IPs
-        d['floating_ips'] = {}
+        ips = {}
         for net in self.addresses:
             # Get an address list per network
             addresses = self.addresses[net]
             for a in addresses:
                 if a['OS-EXT-IPS:type'] == 'floating':
-                    d['floating_ips'].setdefault(net, []).append(
+                    ips.setdefault(net, []).append(
                         (a['addr'], a['OS-EXT-IPS-MAC:mac_addr'])
                     )
+        d['floating_ips'] = ips if ips else None
         return d
 
 
