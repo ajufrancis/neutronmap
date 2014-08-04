@@ -54,6 +54,8 @@
     <script src="{{ url_for('static', filename='js/d3.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jsrender.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/neutronmap.js') }}"></script>
+
+    <!-- Form data submission -->
     <script type="text/javascript">
       $(function() {
         $("form").on("submit", function(event) {
@@ -70,9 +72,9 @@
       });
     </script>
 
-    {% raw %}
-
     <!-- JsRender templates -->
+
+    {% raw %}
 
     <!-- Manage backend exceptions -->
     <script id="exceptionTemplate" type="text/x-jsrender">
