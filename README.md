@@ -15,6 +15,12 @@ $ mkvirtualenv neutronmap
 (neutronmap)$ python neutronmap/webapp.py
 ```
 
+Depending on your client versions, you may also have to install oslo.config:
+
+```
+(neutronmap)$ pip install oslo.config
+```
+
 Use your browser to connect at http://localhost:5000, and submit Keystone credentials for a specific tenant. You can get detailed information by double-clicking on each topology element.
 
 ![Neutron Map screenshot](resources/neutronmap.png?raw=true "Neutron Map")
