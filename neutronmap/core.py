@@ -15,10 +15,11 @@ class Network(object):
         self.id = network.get('id')
         self.name = network.get('name')
         self.router_external = network.get('router:external')
-        self.subnets = []
+        self.status = network.get('status')
+        self.subnets = None
 
     def to_dict(self):
-        attrs = ['id', 'name', 'router_external']
+        attrs = ['id', 'name', 'router_external', 'status']
         d = {attr: getattr(self, attr) for attr in attrs}
         d['subnets'] = [subnet.to_dict() for subnet in self.subnets]
         d['type'] = 'external' if self.router_external else 'network'
@@ -51,10 +52,11 @@ class Router(object):
         self.id = router.get('id')
         self.name = router.get('name')
         self.gateway = router.get('external_gateway_info')
-        self.ports = []
+        self.status = router.get('status')
+        self.ports = None
 
     def to_dict(self):
-        attrs = ['id', 'name', 'gateway']
+        attrs = ['id', 'name', 'gateway', 'status']
         d = {attr: getattr(self, attr) for attr in attrs}
         d['ports'] = [port.to_dict() for port in self.ports]
         d['type'] = 'router'
@@ -69,6 +71,7 @@ class Port(object):
         self.network_id = port.get('network_id')
         self.mac_address = port.get('mac_address')
         self.fixed_ips = port.get('fixed_ips')
+        self.status = port.get('status')
 
         # Attributes used to map the port to the
         # relevant device, and to set the vif name
@@ -88,7 +91,7 @@ class Port(object):
         return prefixes[self.device_owner] + self.id[:11]
 
     def to_dict(self):
-        attrs = ['vif', 'network_id', 'mac_address']
+        attrs = ['vif', 'network_id', 'mac_address', 'status']
         d = {attr: getattr(self, attr) for attr in attrs}
         d['ips'] = [fixed_ip['ip_address'] for fixed_ip in self.fixed_ips]
         return d
@@ -103,13 +106,14 @@ class DhcpPort(object):
         self.mac_address = port.get('mac_address')
         self.fixed_ips = port.get('fixed_ips')
         self.device_id = port.get('device_id')
+        self.status = port.get('status')
 
     @property
     def vif(self):
         return 'tap' + self.id[:11]
 
     def to_dict(self):
-        attrs = ['vif', 'network_id', 'mac_address', 'device_id']
+        attrs = ['vif', 'network_id', 'mac_address', 'device_id', 'status']
         d = {attr: getattr(self, attr) for attr in attrs}
         d['ips'] = [fixed_ip['ip_address'] for fixed_ip in self.fixed_ips]
         d['type'] = 'dhcp'
@@ -123,7 +127,7 @@ class NovaInstance(object):
         self.id = instance.id
         self.name = instance.name
         self.addresses = instance.addresses
-        self.ports = []
+        self.ports = None
 
     def to_dict(self):
         attrs = ['id', 'name']
@@ -139,8 +143,7 @@ class NovaInstance(object):
             for a in addresses:
                 if a['OS-EXT-IPS:type'] == 'floating':
                     ips.setdefault(net, []).append(
-                        (a['addr'], a['OS-EXT-IPS-MAC:mac_addr'])
-                    )
+                        (a['addr'], a['OS-EXT-IPS-MAC:mac_addr']))
         d['floating_ips'] = ips if ips else None
         return d
 
@@ -186,21 +189,18 @@ class Topology(object):
 
         # Subnet mapping
         for network in self._data['networks']:
-            for subnet in self._data['subnets']:
-                if subnet.network_id == network.id:
-                    network.subnets.append(subnet)
+            network.subnets = [subnet for subnet in self._data['subnets']
+                               if subnet.network_id == network.id]
 
         # Router interface mapping
         for router in self._data['routers']:
-            for port in self._data['ports']:
-                if port.device_id == router.id:
-                    router.ports.append(port)
+            router.ports = [port for port in self._data['ports']
+                            if port.device_id == router.id]
 
         # Nova instance interface mapping
         for vm in self._data['vms']:
-            for port in self._data['ports']:
-                if port.device_id == vm.id:
-                    vm.ports.append(port)
+            vm.ports = [port for port in self._data['ports']
+                        if port.device_id == vm.id]
 
     @abstractmethod
     def dumps():

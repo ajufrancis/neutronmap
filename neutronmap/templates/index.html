@@ -109,6 +109,7 @@
           id: {{:id}}<br/>
           name: {{:name }}<br/>
           router external: {{:router_external}}<br/>
+          status: {{:status}}<br/>
           {{for subnets}}
             <strong>Subnet:</strong><br/>
             id: {{:id}}<br/>
@@ -137,6 +138,7 @@
           id: {{:id}}<br/>
           name: {{:name }}<br/>
           router external: {{:router_external}}<br/>
+          status: {{:status}}<br/>
           {{for subnets}}
             <strong>Subnet:</strong><br/>
             id: {{:id}}<br/>
@@ -164,6 +166,7 @@
           <strong>Router:</strong><br/>
           id: {{:id}}<br/>
           name: {{:name}}<br/>
+          status: {{:status}}<br/>
           {{if gateway}}
             <strong>External gateway info:</strong><br/>
             network id: {{:gateway.network_id}}<br/>
@@ -178,6 +181,7 @@
             {{for ips ~count=ips.length}}
               {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
             {{/for}}
+            status: {{:status}}<br/>
           {{/for}}
         </div>
       </div>
@@ -200,6 +204,7 @@
           {{for ips ~count=ips.length}}
             {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
           {{/for}}
+          status: {{:status}}<br/>
         </div>
       </div>
     </script>
@@ -223,6 +228,7 @@
             {{for ips ~count=ips.length}}
               {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
             {{/for}}
+            status: {{:status}}<br/>
           {{/for}}
           {{if floating_ips}}
             <strong>Floating ips:</strong><br/>
