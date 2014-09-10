@@ -1,4 +1,5 @@
 Flask
+oslo.config
 python-neutronclient
 python-novaclient
 WTForms
