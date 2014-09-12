@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div class="col-md-4">
+  <div id="details"></div>
+</div>
+<div class="col-md-8">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <p class="panel-title"><strong>Tenant {{ tenant_name }}&nbsp;&nbsp;-&nbsp;&nbsp;{{ auth_url }}</strong></p>
+    </div>
+    <div class="panel-body" id="topology"></div>
+  </div>
+</div>
+{% endblock main %}
+{% block extra_script %}
+<script src="{{ url_for('static', filename='js/d3.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jsrender.min.js') }}"></script>
+<script>
+// d3.js code to generate the Neutron topology graph
+
+var json = {{ data|safe }};
+var aspect = 0.6;
+var svg;
+
+(function () {
+    var width = $("#topology").width();
+    var height = width * aspect;
+
+    var force = d3.layout.force()
+        .size([width, height])
+        .charge(-1000)
+        .friction(0.8)
+        .linkDistance(50);
+
+    svg = d3.select("#topology").append("svg")
+        .attr("preserveAspectRatio", "xMinYMin")
+        .attr("viewBox", "0 0 " + width + " " + height)
+        .attr("width", width)
+        .attr("height", height);
+
+    var link = svg.selectAll(".link")
+        .data(json.links)
+        .enter().append("line")
+        .attr("class", "link");
+
+    var node = svg.selectAll(".node")
+        .data(json.nodes)
+        .enter().append("g")
+        .attr("class", "node")
+        .on("dblclick", dblclick)
+        .call(force.drag);
+
+    node.append("circle")
+        .attr("class", function(d) { return d.type + "-inner"; })
+        .attr("r", function(d) { return Math.sqrt(size(d)) / 18; });
+
+    node.append("circle")
+        .attr("class", function(d) { return d.type + "-outer"; })
+        .attr("r", function(d) { return Math.sqrt(size(d)) / 6; })
+
+    force
+        .nodes(json.nodes)
+        .links(json.links)
+        .start();
+
+    force.on("tick", function() {
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    });
+})();
+
+// Get a specific size for each network element
+function size(d) {
+    var sizes = [];
+    sizes["external"] = 10000;
+    sizes["network"] = 10000;
+    sizes["router"] = 8000;
+    sizes["dhcp"] = 6000;
+    sizes["vm"] = 6000;
+    return sizes[d.type];
+}
+
+// Display node info on dblclick.
+function dblclick(d) {
+    d3.selectAll(".node").classed({"highlighted": false});
+    d3.select(this).classed({"highlighted": true});
+    var html = $.templates("#" + d.type + "Template").render(d);
+    $("#details").empty().html(html);
+}
+
+$(window).resize(function() {
+    var width = $("#topology").width();
+    svg.attr("width", width);
+    svg.attr("height", width * aspect);
+});
+</script>
+
+{% raw %}
+<!-- JsRender templates -->
+
+<!-- Display details for a Neutron external network -->
+<script id="externalTemplate" type="text/x-jsrender">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <p class="panel-title"><strong>Element details</strong></p>
+    </div>
+    <div class="panel-body">
+      <strong>Network:</strong><br/>
+      id: {{:id}}<br/>
+      name: {{:name }}<br/>
+      router external: {{:router_external}}<br/>
+      status: {{:status}}<br/>
+      {{for subnets}}
+        <strong>Subnet:</strong><br/>
+        id: {{:id}}<br/>
+        name: {{:name}}<br/>
+        cidr: {{:cidr}}<br/>
+        {{for pools}}
+          pool: {{:start}} / {{:end}}<br/>
+        {{/for}}
+        gateway ip: {{:gateway}}<br/>
+        {{for nameservers}}
+          dns: {{:#data}}<br/>
+        {{/for}}
+      {{/for}}
+    </div>
+  </div>
+</script>
+
+<!-- Display details for a Neutron network -->
+<script id="networkTemplate" type="text/x-jsrender">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <p class="panel-title"><strong>Element details</strong></p>
+    </div>
+    <div class="panel-body">
+      <strong>Network:</strong><br/>
+      id: {{:id}}<br/>
+      name: {{:name }}<br/>
+      router external: {{:router_external}}<br/>
+      status: {{:status}}<br/>
+      {{for subnets}}
+        <strong>Subnet:</strong><br/>
+        id: {{:id}}<br/>
+        name: {{:name}}<br/>
+        cidr: {{:cidr}}<br/>
+        {{for pools}}
+          pool: {{:start}} / {{:end}}<br/>
+        {{/for}}
+        gateway ip: {{:gateway}}<br/>
+        {{for nameservers}}
+          dns: {{:#data}}<br/>
+        {{/for}}
+      {{/for}}
+    </div>
+  </div>
+</script>
+
+<!-- Display details for a Neutron router -->
+<script id="routerTemplate" type="text/x-jsrender">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <p class="panel-title"><strong>Element details</strong></p>
+    </div>
+    <div class="panel-body">
+      <strong>Router:</strong><br/>
+      id: {{:id}}<br/>
+      name: {{:name}}<br/>
+      status: {{:status}}<br/>
+      {{if gateway}}
+        <strong>External gateway info:</strong><br/>
+        network id: {{:gateway.network_id}}<br/>
+        enable snat: {{:gateway.enable_snat}}<br/>
+      {{/if}}
+      {{for ports}}
+        <strong>Interface:</strong><br/>
+        name: {{:vif}}<br/>
+        network id: {{:network_id}}<br/>
+        mac: {{:mac_address}}<br/>
+        ips:
+        {{for ips ~count=ips.length}}
+          {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
+        {{/for}}
+        status: {{:status}}<br/>
+      {{/for}}
+    </div>
+  </div>
+</script>
+
+<!-- Display details for a Neutron DHCP agent -->
+<script id="dhcpTemplate" type="text/x-jsrender">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <p class="panel-title"><strong>Element details</strong></p>
+    </div>
+    <div class="panel-body">
+      <strong>DHCP device:</strong><br/>
+      id: {{:device_id}}<br/>
+      <strong>Interface:</strong><br/>
+      name: {{:vif}}<br/>
+      network id: {{:network_id}}<br/>
+      mac: {{:mac_address}}<br/>
+      ips:
+      {{for ips ~count=ips.length}}
+        {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
+      {{/for}}
+      status: {{:status}}<br/>
+    </div>
+  </div>
+</script>
+
+<!-- Display details for a Nova instance -->
+<script id="vmTemplate" type="text/x-jsrender">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <p class="panel-title"><strong>Element details</strong></p>
+    </div>
+    <div class="panel-body">
+      <strong>Nova instance:</strong><br/>
+      id: {{:id}}<br/>
+      name: {{:name}}<br/>
+      {{for ports}}
+        <strong>Interface:</strong><br/>
+        name: {{:vif}}<br/>
+        network id: {{:network_id}}<br/>
+        mac: {{:mac_address}}<br/>
+        ips:
+        {{for ips ~count=ips.length}}
+          {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
+        {{/for}}
+        status: {{:status}}<br/>
+      {{/for}}
+      {{if floating_ips}}
+        <strong>Floating ips:</strong><br/>
+        {{for floating_ips}}
+          {{props}}
+            {{for prop ~key=key}}
+              {{:#data[0]}} - {{:#data[1]}} ({{:~key}})<br/>
+            {{/for}}
+          {{/props}}
+        {{/for}}
+      {{/if}}
+    </div>
+  </div>
+</script>
+{% endraw %}
+{% endblock extra_script %}
