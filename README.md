@@ -24,6 +24,7 @@ Depending on your client versions, you may also have to install oslo.config:
 Use your browser to connect at http://localhost:5000, and submit Keystone credentials for a specific tenant. You can get detailed information by double-clicking on each topology element.
 
 ![Neutron Map screenshot](resources/demo.png?raw=true "Neutron Map")
+
 ![Neutron Map screenshot](resources/admin.png?raw=true "Neutron Map")
 
 [d3js]: http://d3js.org/
