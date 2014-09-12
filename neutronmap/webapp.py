@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, json, render_template, request, Response
+from flask import Flask, json, render_template, request
 
 from forms import AuthenticationForm
 from core import LogicalTopology
@@ -10,15 +10,12 @@ app = Flask(__name__)
 app.config.from_object('config')
 
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """Application entry point."""
-    return render_template('index.html')
 
-
-@app.route('/topology', methods=['POST'])
-def topology():
-    """Returns a JSON representation of a Neutron topology."""
+    error = None
+    status = None
     form = AuthenticationForm(request.form)
 
     if request.method == 'POST' and form.validate():
@@ -30,9 +27,9 @@ def topology():
 
         try:
             topology = LogicalTopology(*args, **kwargs)
-            return Response(response=topology.dumps(),
-                            mimetype='application/json',
-                            status=200)
+            return render_template('map.html', data=topology.dumps(),
+                                   tenant_name=kwargs['tenant_name'],
+                                   auth_url=kwargs['auth_url']), 200
         except Exception as e:
             try:
                 # Handle Neutron client exceptions first
@@ -45,9 +42,8 @@ def topology():
                 error = {'title': type(e).__name__,
                          'message': str(e),
                          'code': status}
-            return Response(response=json.dumps(error),
-                            mimetype='application/json',
-                            status=status)
+
+    return render_template('index.html', form=form, error=error), status
 
 
 if __name__ == "__main__":
