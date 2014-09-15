@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from wtforms import Form
-from wtforms import PasswordField
-from wtforms import StringField
-
+from wtforms import Form, PasswordField, StringField
 from wtforms.validators import required
 
 

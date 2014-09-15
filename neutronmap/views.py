@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from flask import json, render_template, request
-
-from forms import AuthenticationForm
 from core import LogicalTopology
-
+from flask import json, render_template, request
+from forms import AuthenticationForm
 from neutronmap import app
 
 
