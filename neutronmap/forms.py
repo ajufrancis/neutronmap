@@ -8,10 +8,7 @@ from wtforms.validators import required
 
 
 class AuthenticationForm(Form):
-    """Form for specifying Keystone credentials
-       along with the target tenant.
-
-    """
+    """Form for Keystone authentication."""
 
     username = StringField('username', [required()])
     password = PasswordField('password', [required()])

@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, json, render_template, request
+from flask import json, render_template, request
 
 from forms import AuthenticationForm
 from core import LogicalTopology
 
-
-app = Flask(__name__)
-app.config.from_object('config')
+from neutronmap import app
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -46,5 +44,15 @@ def index():
     return render_template('index.html', form=form, error=error), status
 
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=False)
+@app.errorhandler(500)
+def internal_server_error(error):
+    """In case the worst happens."""
+
+    return render_template('errors/500.html'), 500
+
+
+@app.errorhandler(404)
+def not_found(error):
+    """Another classic."""
+
+    return render_template('errors/404.html'), 404
