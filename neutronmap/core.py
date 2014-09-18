@@ -123,9 +123,9 @@ class NovaInstance(object):
     """A graph node that represents a compute instance."""
 
     def __init__(self, instance):
-        self.id = instance.id
-        self.name = instance.name
-        self.addresses = instance.addresses
+        self.id = instance.get('id')
+        self.name = instance.get('name')
+        self.addresses = instance.get('addresses')
         self.ports = None
 
     def to_dict(self):
@@ -183,8 +183,8 @@ class Topology(object):
              if item.get('device_owner') == 'network:dhcp']
 
         # Nova instances
-        vms = self._nova.servers.list()
-        self._data['vms'] = [NovaInstance(item) for item in vms]
+        _, vms = self._nova.client.get('/servers/detail')
+        self._data['vms'] = [NovaInstance(item) for item in vms.get('servers')]
 
         # Subnet mapping
         for network in self._data['networks']:
