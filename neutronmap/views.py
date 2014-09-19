@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from core import LogicalTopology
+from core import Topology
 from flask import json, render_template, request
 from forms import AuthenticationForm
 from neutronmap import app
@@ -22,7 +22,7 @@ def index():
         kwargs = dict(zip(keys, args))
 
         try:
-            topology = LogicalTopology(*args, **kwargs)
+            topology = Topology(*args, **kwargs)
             return render_template('map.html', data=topology.dumps(),
                                    tenant_name=kwargs['tenant_name'],
                                    auth_url=kwargs['auth_url']), 200

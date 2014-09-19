@@ -2,7 +2,6 @@
 
 import json
 
-from abc import ABCMeta, abstractmethod
 from neutronclient.neutron import client as neutron_client
 from novaclient import client as nova_client
 
@@ -150,8 +149,6 @@ class NovaInstance(object):
 class Topology(object):
     """A graph representation of a Neutron topology for a specific tenant."""
 
-    __metaclass__ = ABCMeta
-
     def __init__(self, *args, **kwargs):
         self._nova = nova_client.Client('2', *args)
         self._neutron = neutron_client.Client('2.0', **kwargs)
@@ -201,18 +198,6 @@ class Topology(object):
             vm.ports = [port for port in self._data['ports']
                         if port.device_id == vm.id]
 
-    @abstractmethod
-    def dumps():
-        """Returns a JSON representation of the Neutron topology."""
-        return
-
-
-class LogicalTopology(Topology):
-    """Returns a logical view of the Neutron network."""
-
-    def __init__(self, *args, **kwargs):
-        super(LogicalTopology, self).__init__(*args, **kwargs)
-
     def dumps(self):
         # We keep the IDs of the relevant elements
         # in order to generate the links
@@ -257,7 +242,3 @@ class LogicalTopology(Topology):
                     links.append({'source': source, 'target': target})
 
         return json.dumps({'nodes': nodes, 'links': links})
-
-
-class PhysicalTopology(Topology):
-    pass
