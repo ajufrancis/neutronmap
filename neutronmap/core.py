@@ -152,53 +152,75 @@ class Topology(object):
     def __init__(self, *args, **kwargs):
         self._nova = nova_client.Client('2', *args)
         self._neutron = neutron_client.Client('2.0', **kwargs)
-        self._data = {}
-        self._build()
+        self._data = self._build()
+
+    def _list_networks(self):
+        return self._neutron.list_networks().get('networks')
+
+    def _list_subnets(self):
+        return self._neutron.list_subnets().get('subnets')
+
+    def _list_routers(self):
+        return self._neutron.list_routers().get('routers')
+
+    def _list_ports(self):
+        return self._neutron.list_ports().get('ports')
+
+    def _list_vms(self):
+        _, vms = self._nova.client.get('/servers/detail')
+        return vms.get('servers')
 
     def _build(self):
         """Extract data and map the relevant elements together."""
 
+        data = {}
+
         # Networks
-        networks = self._neutron.list_networks().get('networks')
-        self._data['networks'] = [Network(item) for item in networks]
+        networks = self._list_networks()
+        data['networks'] = [Network(item) for item in networks]
 
         # Subnets
-        subnets = self._neutron.list_subnets().get('subnets')
-        self._data['subnets'] = [Subnet(item) for item in subnets]
+        subnets = self._list_subnets()
+        data['subnets'] = [Subnet(item) for item in subnets]
 
         # Routers
-        routers = self._neutron.list_routers().get('routers')
-        self._data['routers'] = [Router(item) for item in routers]
+        routers = self._list_routers()
+        data['routers'] = [Router(item) for item in routers]
 
         # Ports
-        ports = self._neutron.list_ports().get('ports')
-        self._data['ports'] = [Port(item) for item in ports]
+        ports = self._list_ports()
+        data['ports'] = [Port(item) for item in ports]
 
         # DHCP devices
-        self._data['dhcp_ports'] = \
-            [DhcpPort(item) for item in ports
-             if item.get('device_owner') == 'network:dhcp']
+        data['dhcp_ports'] = [DhcpPort(item) for item in ports
+                              if item.get('device_owner') == 'network:dhcp']
 
         # Nova instances
-        _, vms = self._nova.client.get('/servers/detail')
-        self._data['vms'] = [NovaInstance(item) for item in vms.get('servers')]
+        vms = self._list_vms()
+        data['vms'] = [NovaInstance(item) for item in vms]
 
         # Subnet mapping
-        for network in self._data['networks']:
-            network.subnets = [subnet for subnet in self._data['subnets']
+        for network in data['networks']:
+            network.subnets = [subnet for subnet in data['subnets']
                                if subnet.network_id == network.id]
 
         # Router interface mapping
-        for router in self._data['routers']:
-            router.ports = [port for port in self._data['ports']
+        for router in data['routers']:
+            router.ports = [port for port in data['ports']
                             if port.device_id == router.id]
 
         # Nova instance interface mapping
-        for vm in self._data['vms']:
-            vm.ports = [port for port in self._data['ports']
+        for vm in data['vms']:
+            vm.ports = [port for port in data['ports']
                         if port.device_id == vm.id]
 
-    def dumps(self):
+        return data
+
+    def dump(self):
+        """Returns a JSON representation of nodes and links that
+           make up a Neutron topology.
+        """
+
         # We keep the IDs of the relevant elements
         # in order to generate the links
         ids = []
