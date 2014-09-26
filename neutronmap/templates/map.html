@@ -89,7 +89,7 @@ function size(d) {
 function dblclick(d) {
     d3.selectAll(".node").classed({"highlighted": false});
     d3.select(this).classed({"highlighted": true});
-    var html = $.templates("#" + d.type + "Template").render(d);
+    var html = $.templates("#" + d.type + "Template").render(d, {isEmpty: $.isEmptyObject});
     $("#details").empty().html(html);
 }
 
@@ -112,21 +112,28 @@ $(window).resize(function() {
     <div class="panel-body">
       <strong>Network:</strong><br/>
       id: {{:id}}<br/>
-      name: {{:name }}<br/>
+      {{if !~isEmpty(name)}}
+        name: {{:name }}<br/>
+      {{/if}}
       router external: {{:router_external}}<br/>
       status: {{:status}}<br/>
       {{for subnets}}
         <strong>Subnet:</strong><br/>
         id: {{:id}}<br/>
-        name: {{:name}}<br/>
+        {{if !~isEmpty(name)}}
+          name: {{:name }}<br/>
+        {{/if}}
         cidr: {{:cidr}}<br/>
-        {{for pools}}
-          pool: {{:start}} / {{:end}}<br/>
+        {{for allocation_pools}}
+          allocation pool: {{:start}} / {{:end}}<br/>
         {{/for}}
-        gateway ip: {{:gateway}}<br/>
-        {{for nameservers}}
-          dns: {{:#data}}<br/>
-        {{/for}}
+        gateway ip: {{:gateway_ip}}<br/>
+        {{if dns_nameservers.length != 0}}
+          dns:
+          {{for dns_nameservers ~count=dns_nameservers.length}}
+            {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
+          {{/for}}
+        {{/if}}
       {{/for}}
     </div>
   </div>
@@ -141,21 +148,28 @@ $(window).resize(function() {
     <div class="panel-body">
       <strong>Network:</strong><br/>
       id: {{:id}}<br/>
-      name: {{:name }}<br/>
+      {{if !~isEmpty(name)}}
+        name: {{:name }}<br/>
+      {{/if}}
       router external: {{:router_external}}<br/>
       status: {{:status}}<br/>
       {{for subnets}}
         <strong>Subnet:</strong><br/>
         id: {{:id}}<br/>
-        name: {{:name}}<br/>
+        {{if !~isEmpty(name)}}
+          name: {{:name }}<br/>
+        {{/if}}
         cidr: {{:cidr}}<br/>
-        {{for pools}}
-          pool: {{:start}} / {{:end}}<br/>
+        {{for allocation_pools}}
+          allocation pool: {{:start}} / {{:end}}<br/>
         {{/for}}
-        gateway ip: {{:gateway}}<br/>
-        {{for nameservers}}
-          dns: {{:#data}}<br/>
-        {{/for}}
+        gateway ip: {{:gateway_ip}}<br/>
+        {{if dns_nameservers.length != 0}}
+          dns:
+          {{for dns_nameservers ~count=dns_nameservers.length}}
+            {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
+          {{/for}}
+        {{/if}}
       {{/for}}
     </div>
   </div>
@@ -172,10 +186,10 @@ $(window).resize(function() {
       id: {{:id}}<br/>
       name: {{:name}}<br/>
       status: {{:status}}<br/>
-      {{if gateway}}
+      {{if external_gateway_info}}
         <strong>External gateway info:</strong><br/>
-        network id: {{:gateway.network_id}}<br/>
-        enable snat: {{:gateway.enable_snat}}<br/>
+        network id: {{:external_gateway_info.network_id}}<br/>
+        enable snat: {{:external_gateway_info.enable_snat}}<br/>
       {{/if}}
       {{for ports}}
         <strong>Interface:</strong><br/>
@@ -183,7 +197,7 @@ $(window).resize(function() {
         network id: {{:network_id}}<br/>
         mac: {{:mac_address}}<br/>
         ips:
-        {{for ips ~count=ips.length}}
+        {{for ip_addresses ~count=ip_addresses.length}}
           {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
         {{/for}}
         status: {{:status}}<br/>
@@ -206,7 +220,7 @@ $(window).resize(function() {
       network id: {{:network_id}}<br/>
       mac: {{:mac_address}}<br/>
       ips:
-      {{for ips ~count=ips.length}}
+      {{for ip_addresses ~count=ip_addresses.length}}
         {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
       {{/for}}
       status: {{:status}}<br/>
@@ -230,12 +244,12 @@ $(window).resize(function() {
         network id: {{:network_id}}<br/>
         mac: {{:mac_address}}<br/>
         ips:
-        {{for ips ~count=ips.length}}
+        {{for ip_addresses ~count=ip_addresses.length}}
           {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
         {{/for}}
         status: {{:status}}<br/>
       {{/for}}
-      {{if floating_ips}}
+      {{if !~isEmpty(floating_ips)}}
         <strong>Floating ips:</strong><br/>
         {{for floating_ips}}
           {{props}}

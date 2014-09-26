@@ -6,133 +6,149 @@ from neutronclient.neutron import client as neutron_client
 from novaclient import client as nova_client
 
 
-class Network(object):
-    """A graph node that represents a network."""
+class Wrapper(object):
+    """A basic wrapper for all Neutron objects."""
+
+    def __init__(self, instance):
+        for k, v in instance.iteritems():
+            setattr(self, k, v)
+
+
+class Network(Wrapper):
+    """Network node wrapper."""
 
     def __init__(self, network):
-        self.id = network.get('id')
-        self.name = network.get('name')
-        self.router_external = network.get('router:external')
-        self.status = network.get('status')
-        self.subnets = None
-
-    def to_dict(self):
-        attrs = ['id', 'name', 'router_external', 'status']
-        d = {attr: getattr(self, attr) for attr in attrs}
-        d['subnets'] = [subnet.to_dict() for subnet in self.subnets]
-        d['type'] = 'external' if self.router_external else 'network'
-        return d
-
-
-class Subnet(object):
-    """A Neutron subnet representation."""
-
-    def __init__(self, subnet):
-        self.id = subnet.get('id')
-        self.name = subnet.get('name')
-        self.cidr = subnet.get('cidr')
-        self.gateway = subnet.get('gateway_ip')
-        self.pools = subnet.get('allocation_pools')
-        self.nameservers = subnet.get('dns_nameservers')
-
-        # The network id is used to map the subnet to its network
-        self.network_id = subnet.get('network_id')
-
-    def to_dict(self):
-        attrs = ['id', 'name', 'cidr', 'gateway', 'pools', 'nameservers']
-        return {attr: getattr(self, attr) for attr in attrs}
-
-
-class Router(object):
-    """A graph node that represents a router."""
-
-    def __init__(self, router):
-        self.id = router.get('id')
-        self.name = router.get('name')
-        self.gateway = router.get('external_gateway_info')
-        self.status = router.get('status')
-        self.ports = None
-
-    def to_dict(self):
-        attrs = ['id', 'name', 'gateway', 'status']
-        d = {attr: getattr(self, attr) for attr in attrs}
-        d['ports'] = [port.to_dict() for port in self.ports]
-        d['type'] = 'router'
-        return d
-
-
-class Port(object):
-    """A Neutron port representation."""
-
-    def __init__(self, port):
-        self.id = port.get('id')
-        self.network_id = port.get('network_id')
-        self.mac_address = port.get('mac_address')
-        self.fixed_ips = port.get('fixed_ips')
-        self.status = port.get('status')
-
-        # Attributes used to map the port to the
-        # relevant device, and to set the vif name
-        self.device_id = port.get('device_id')
-        self.device_owner = port.get('device_owner')
+        super(Network, self).__init__(network)
+        self._subnets = None
 
     @property
-    def vif(self):
-        prefixes = {
-            'network:router_interface': 'qr-',
-            'network:router_gateway': 'qg-',
-            'network:floatingip': 'qg-',
-            'network:dhcp': 'tap',
-            'compute:None': 'tap'
-        }
+    def router_external(self):
+        return getattr(self, 'router:external')
+
+    @property
+    def subnets(self):
+        return self._subnets
+
+    @subnets.setter
+    def subnets(self, value):
+        self._subnets = value
+
+    @property
+    def data(self):
+        return {'id': self.id,
+                'name': self.name,
+                'status': self.status,
+                'router_external': self.router_external,
+                'type': 'external' if self.router_external else 'network',
+                'subnets': [subnet.data for subnet in self.subnets]}
+
+
+class Subnet(Wrapper):
+    """Wrapper for a Neutron subnet."""
+
+    def __init__(self, subnet):
+        super(Subnet, self).__init__(subnet)
+
+    @property
+    def data(self):
+        return {'id': self.id,
+                'name': self.name,
+                'cidr': self.cidr,
+                'gateway_ip': self.gateway_ip,
+                'allocation_pools': self.allocation_pools,
+                'dns_nameservers': self.dns_nameservers}
+
+
+class Router(Wrapper):
+    """Router node wrapper."""
+
+    def __init__(self, router):
+        super(Router, self).__init__(router)
+        self._ports = None
+
+    @property
+    def ports(self):
+        return self._ports
+
+    @ports.setter
+    def ports(self, value):
+        self._ports = value
+
+    @property
+    def data(self):
+        return {'id': self.id,
+                'name': self.name,
+                'external_gateway_info': self.external_gateway_info,
+                'status': self.status,
+                'type': 'router',
+                'ports': [port.data for port in self.ports]}
+
+
+class Port(Wrapper):
+    """Wrapper for a Neutron port."""
+
+    def __init__(self, port):
+        super(Port, self).__init__(port)
+
+    @property
+    def _vif(self):
+        prefixes = {'network:router_interface': 'qr-',
+                    'network:router_gateway': 'qg-',
+                    'network:floatingip': 'qg-',
+                    'network:dhcp': 'tap',
+                    'compute:None': 'tap'}
 
         return prefixes[self.device_owner] + self.id[:11]
 
-    def to_dict(self):
-        attrs = ['vif', 'network_id', 'mac_address', 'status']
-        d = {attr: getattr(self, attr) for attr in attrs}
-        d['ips'] = [fixed_ip['ip_address'] for fixed_ip in self.fixed_ips]
-        return d
+    @property
+    def data(self):
+        return {'vif': self._vif,
+                'network_id': self.network_id,
+                'mac_address': self.mac_address,
+                'status': self.status,
+                'ip_addresses': [item['ip_address']
+                                 for item in self.fixed_ips]}
 
 
-class DhcpPort(object):
-    """A graph node that represents the DHCP device binded to a subnet."""
+class DhcpPort(Wrapper):
+    """DHCP device node wrapper."""
 
     def __init__(self, port):
-        self.id = port.get('id')
-        self.network_id = port.get('network_id')
-        self.mac_address = port.get('mac_address')
-        self.fixed_ips = port.get('fixed_ips')
-        self.device_id = port.get('device_id')
-        self.status = port.get('status')
+        super(DhcpPort, self).__init__(port)
 
     @property
-    def vif(self):
+    def _vif(self):
         return 'tap' + self.id[:11]
 
-    def to_dict(self):
-        attrs = ['vif', 'network_id', 'mac_address', 'device_id', 'status']
-        d = {attr: getattr(self, attr) for attr in attrs}
-        d['ips'] = [fixed_ip['ip_address'] for fixed_ip in self.fixed_ips]
-        d['type'] = 'dhcp'
-        return d
+    @property
+    def data(self):
+        return {'vif': self._vif,
+                'network_id': self.network_id,
+                'mac_address': self.mac_address,
+                'device_id': self.device_id,
+                'status': self.status,
+                'type': 'dhcp',
+                'ip_addresses': [item['ip_address']
+                                 for item in self.fixed_ips]}
 
 
-class NovaInstance(object):
-    """A graph node that represents a compute instance."""
+class NovaInstance(Wrapper):
+    """Nova instance node wrapper."""
 
     def __init__(self, instance):
-        self.id = instance.get('id')
-        self.name = instance.get('name')
-        self.addresses = instance.get('addresses')
-        self.ports = None
+        super(NovaInstance, self).__init__(instance)
+        self._ports = None
 
-    def to_dict(self):
-        attrs = ['id', 'name']
-        d = {attr: getattr(self, attr) for attr in attrs}
-        d['ports'] = [port.to_dict() for port in self.ports]
-        d['type'] = 'vm'
+    @property
+    def ports(self):
+        return self._ports
 
+    @ports.setter
+    def ports(self, value):
+        self._ports = value
+
+    @property
+    def data(self):
         # Floating IPs
         ips = {}
         for net in self.addresses:
@@ -142,8 +158,12 @@ class NovaInstance(object):
                 if a['OS-EXT-IPS:type'] == 'floating':
                     ips.setdefault(net, []).append(
                         (a['addr'], a['OS-EXT-IPS-MAC:mac_addr']))
-        d['floating_ips'] = ips if ips else None
-        return d
+
+        return {'id': self.id,
+                'name': self.name,
+                'type': 'vm',
+                'floating_ips': ips,
+                'ports': [port.data for port in self.ports]}
 
 
 class Topology(object):
@@ -152,107 +172,90 @@ class Topology(object):
     def __init__(self, *args, **kwargs):
         self._nova = nova_client.Client('2', *args)
         self._neutron = neutron_client.Client('2.0', **kwargs)
-        self._data = self._build()
 
-    def _list_networks(self):
-        return self._neutron.list_networks().get('networks')
+    @property
+    def _networks(self):
+        networks = self._neutron.list_networks().get('networks')
+        return [Network(item) for item in networks]
 
-    def _list_subnets(self):
-        return self._neutron.list_subnets().get('subnets')
+    @property
+    def _subnets(self):
+        subnets = self._neutron.list_subnets().get('subnets')
+        return [Subnet(item) for item in subnets]
 
-    def _list_routers(self):
-        return self._neutron.list_routers().get('routers')
+    @property
+    def _routers(self):
+        routers = self._neutron.list_routers().get('routers')
+        return [Router(item) for item in routers]
 
-    def _list_ports(self):
-        return self._neutron.list_ports().get('ports')
+    @property
+    def _ports(self):
+        ports = self._neutron.list_ports().get('ports')
+        return [Port(item) for item in ports]
 
-    def _list_vms(self):
+    @property
+    def _dhcp_ports(self):
+        ports = self._neutron.list_ports().get('ports')
+        return [DhcpPort(item) for item in ports
+                if item['device_owner'] == 'network:dhcp']
+
+    @property
+    def _vms(self):
         _, vms = self._nova.client.get('/servers/detail')
-        return vms.get('servers')
+        return [NovaInstance(item) for item in vms.get('servers')]
 
-    def _build(self):
-        """Extract data and map the relevant elements together."""
+    def build(self):
+        """Returns a JSON representation of the topology."""
 
-        data = {}
-
-        # Networks
-        networks = self._list_networks()
-        data['networks'] = [Network(item) for item in networks]
-
-        # Subnets
-        subnets = self._list_subnets()
-        data['subnets'] = [Subnet(item) for item in subnets]
-
-        # Routers
-        routers = self._list_routers()
-        data['routers'] = [Router(item) for item in routers]
-
-        # Ports
-        ports = self._list_ports()
-        data['ports'] = [Port(item) for item in ports]
-
-        # DHCP devices
-        data['dhcp_ports'] = [DhcpPort(item) for item in ports
-                              if item.get('device_owner') == 'network:dhcp']
-
-        # Nova instances
-        vms = self._list_vms()
-        data['vms'] = [NovaInstance(item) for item in vms]
-
-        # Subnet mapping
-        for network in data['networks']:
-            network.subnets = [subnet for subnet in data['subnets']
+        # Subnet to network mapping
+        networks = self._networks
+        for network in networks:
+            network.subnets = [subnet for subnet in self._subnets
                                if subnet.network_id == network.id]
 
         # Router interface mapping
-        for router in data['routers']:
-            router.ports = [port for port in data['ports']
+        routers = self._routers
+        for router in routers:
+            router.ports = [port for port in self._ports
                             if port.device_id == router.id]
 
         # Nova instance interface mapping
-        for vm in data['vms']:
-            vm.ports = [port for port in data['ports']
+        vms = self._vms
+        for vm in vms:
+            vm.ports = [port for port in self._ports
                         if port.device_id == vm.id]
 
-        return data
+        # We keep the ID of each node added to the
+        # topology in order to generate the links
+        ids, nodes, links = [], [], []
 
-    def dump(self):
-        """Returns a JSON representation of nodes and links that
-           make up a Neutron topology.
-        """
-
-        # We keep the IDs of the relevant elements
-        # in order to generate the links
-        ids = []
-        nodes = []
-        links = []
-
-        for network in self._data['networks']:
+        for network in networks:
             ids.append(network.id)
-            nodes.append(network.to_dict())
+            nodes.append(network.data)
 
-        for router in self._data['routers']:
+        for router in routers:
             ids.append(router.id)
-            nodes.append(router.to_dict())
+            nodes.append(router.data)
 
-        for vm in self._data['vms']:
+        for vm in vms:
             ids.append(vm.id)
-            nodes.append(vm.to_dict())
+            nodes.append(vm.data)
 
-        for dhcp_port in self._data['dhcp_ports']:
+        for dhcp_port in self._dhcp_ports:
             ids.append(dhcp_port.device_id)
-            nodes.append(dhcp_port.to_dict())
+            nodes.append(dhcp_port.data)
 
         # For each router with an external gateway, we
         # add a link toward the external network
-        for router in self._data['routers']:
-            if router.gateway:
+        for router in routers:
+            gateway = router.external_gateway_info
+            if gateway:
                 source = ids.index(router.id)
-                target = ids.index(router.gateway.get('network_id'))
+                target = ids.index(gateway.get('network_id'))
                 links.append({'source': source, 'target': target})
 
         # Links between networks and devices
-        for port in self._data['ports']:
+        for port in self._ports:
             if port.device_owner in ('compute:None',
                                      'network:dhcp',
                                      'network:router_interface'):

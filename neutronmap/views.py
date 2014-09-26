@@ -23,7 +23,7 @@ def index():
 
         try:
             topology = Topology(*args, **kwargs)
-            return render_template('map.html', data=topology.dump(),
+            return render_template('map.html', data=topology.build(),
                                    tenant_name=kwargs['tenant_name'],
                                    auth_url=kwargs['auth_url']), 200
         except Exception as e:
