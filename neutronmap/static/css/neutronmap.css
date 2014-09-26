@@ -84,12 +84,12 @@ body {
 }
 
 .vmoff-inner {
-  fill: #990000;
+  fill: #800000;
   stroke: #000000;
   stroke-width: 2px;
 }
 
 .vmoff-outer {
-  fill: #990000;
+  fill: #ff0000;
   fill-opacity: 0.2;
 }
