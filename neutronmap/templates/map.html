@@ -53,11 +53,11 @@ var svg;
 
     node.append("circle")
         .attr("class", function(d) { return d.type + "-inner"; })
-        .attr("r", function(d) { return Math.sqrt(size(d)) / 18; });
+        .attr("r", function(d) { return Math.sqrt(getNodeSize(d)) / 18; });
 
     node.append("circle")
         .attr("class", function(d) { return d.type + "-outer"; })
-        .attr("r", function(d) { return Math.sqrt(size(d)) / 6; })
+        .attr("r", function(d) { return Math.sqrt(getNodeSize(d)) / 6; })
 
     force
         .nodes(json.nodes)
@@ -75,21 +75,30 @@ var svg;
 })();
 
 // Get a specific size for each network element
-function size(d) {
-    var sizes = [];
-    sizes["external"] = 10000;
-    sizes["network"] = 10000;
-    sizes["router"] = 8000;
-    sizes["dhcp"] = 6000;
-    sizes["vm"] = 6000;
-    return sizes[d.type];
+function getNodeSize(d) {
+    if (d.type == "external" || d.type == "network")
+        { return 10000; }
+    else if (d.type == "router")
+        { return 8000; }
+    else
+        { return 6000; }
+}
+
+// Select the appropriate template to render element details
+function getNodeTemplate(d) {
+    if (d.type == "external" || d.type == "network")
+        { return "#networkTemplate"; }
+    else if (d.type == "vmon" || d.type == "vmoff")
+        { return "#vmTemplate"; }
+    else
+        { return "#" + d.type + "Template"; }
 }
 
 // Display node info on dblclick.
 function dblclick(d) {
     d3.selectAll(".node").classed({"highlighted": false});
     d3.select(this).classed({"highlighted": true});
-    var html = $.templates("#" + d.type + "Template").render(d, {isEmpty: $.isEmptyObject});
+    var html = $.templates(getNodeTemplate(d)).render(d, {isEmpty: $.isEmptyObject});
     $("#details").empty().html(html);
 }
 
@@ -102,42 +111,6 @@ $(window).resize(function() {
 
 {% raw %}
 <!-- JsRender templates -->
-
-<!-- Display details for a Neutron external network -->
-<script id="externalTemplate" type="text/x-jsrender">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <p class="panel-title"><strong>Element details</strong></p>
-    </div>
-    <div class="panel-body">
-      <strong>Network:</strong><br/>
-      id: {{:id}}<br/>
-      {{if !~isEmpty(name)}}
-        name: {{:name }}<br/>
-      {{/if}}
-      router external: {{:router_external}}<br/>
-      status: {{:status}}<br/>
-      {{for subnets}}
-        <strong>Subnet:</strong><br/>
-        id: {{:id}}<br/>
-        {{if !~isEmpty(name)}}
-          name: {{:name }}<br/>
-        {{/if}}
-        cidr: {{:cidr}}<br/>
-        {{for allocation_pools}}
-          allocation pool: {{:start}} / {{:end}}<br/>
-        {{/for}}
-        gateway ip: {{:gateway_ip}}<br/>
-        {{if dns_nameservers.length != 0}}
-          dns:
-          {{for dns_nameservers ~count=dns_nameservers.length}}
-            {{:#data}}{{if #index < ~count-1}}, {{else #index === ~count-1}}<br/>{{/if}}
-          {{/for}}
-        {{/if}}
-      {{/for}}
-    </div>
-  </div>
-</script>
 
 <!-- Display details for a Neutron network -->
 <script id="networkTemplate" type="text/x-jsrender">
@@ -238,6 +211,7 @@ $(window).resize(function() {
       <strong>Nova instance:</strong><br/>
       id: {{:id}}<br/>
       name: {{:name}}<br/>
+      status: {{:status}}<br/>
       {{for ports}}
         <strong>Interface:</strong><br/>
         name: {{:vif}}<br/>

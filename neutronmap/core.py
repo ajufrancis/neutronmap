@@ -161,7 +161,8 @@ class NovaInstance(Wrapper):
 
         return {'id': self.id,
                 'name': self.name,
-                'type': 'vm',
+                'status': self.status,
+                'type': 'vmon' if self.status == 'ACTIVE' else 'vmoff',
                 'floating_ips': ips,
                 'ports': [port.data for port in self.ports]}
 

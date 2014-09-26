@@ -72,13 +72,24 @@ body {
   fill-opacity: 0.2;
 }
 
-.vm-inner {
+.vmon-inner {
   fill: #ff0000;
   stroke: #000000;
   stroke-width: 2px;
 }
 
-.vm-outer {
+.vmon-outer {
   fill: #ff0000;
+  fill-opacity: 0.2;
+}
+
+.vmoff-inner {
+  fill: #990000;
+  stroke: #000000;
+  stroke-width: 2px;
+}
+
+.vmoff-outer {
+  fill: #990000;
   fill-opacity: 0.2;
 }
