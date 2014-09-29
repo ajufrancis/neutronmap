@@ -35,12 +35,14 @@ class Network(Wrapper):
 
     @property
     def data(self):
-        return {'id': self.id,
-                'name': self.name,
-                'status': self.status,
-                'router_external': self.router_external,
-                'type': 'external' if self.router_external else 'network',
-                'subnets': [subnet.data for subnet in self.subnets]}
+        return {
+            'id': self.id,
+            'name': self.name,
+            'router_external': self.router_external,
+            'subnets': [subnet.data for subnet in self.subnets],
+            'status': self.status,
+            'type': 'external' if self.router_external else 'network'
+        }
 
 
 class Subnet(Wrapper):
@@ -51,12 +53,14 @@ class Subnet(Wrapper):
 
     @property
     def data(self):
-        return {'id': self.id,
-                'name': self.name,
-                'cidr': self.cidr,
-                'gateway_ip': self.gateway_ip,
-                'allocation_pools': self.allocation_pools,
-                'dns_nameservers': self.dns_nameservers}
+        return {
+            'id': self.id,
+            'name': self.name,
+            'cidr': self.cidr,
+            'gateway_ip': self.gateway_ip,
+            'allocation_pools': self.allocation_pools,
+            'dns_nameservers': self.dns_nameservers
+        }
 
 
 class Router(Wrapper):
@@ -76,12 +80,14 @@ class Router(Wrapper):
 
     @property
     def data(self):
-        return {'id': self.id,
-                'name': self.name,
-                'external_gateway_info': self.external_gateway_info,
-                'status': self.status,
-                'type': 'router',
-                'ports': [port.data for port in self.ports]}
+        return {
+            'id': self.id,
+            'name': self.name,
+            'external_gateway_info': self.external_gateway_info,
+            'ports': [port.data for port in self.ports],
+            'status': self.status,
+            'type': 'router'
+        }
 
 
 class Port(Wrapper):
@@ -92,22 +98,25 @@ class Port(Wrapper):
 
     @property
     def _vif(self):
-        prefixes = {'network:router_interface': 'qr-',
-                    'network:router_gateway': 'qg-',
-                    'network:floatingip': 'qg-',
-                    'network:dhcp': 'tap',
-                    'compute:None': 'tap'}
+        prefixes = {
+            'network:router_interface': 'qr-',
+            'network:router_gateway': 'qg-',
+            'network:floatingip': 'qg-',
+            'network:dhcp': 'tap',
+            'compute:None': 'tap'
+        }
 
         return prefixes[self.device_owner] + self.id[:11]
 
     @property
     def data(self):
-        return {'vif': self._vif,
-                'network_id': self.network_id,
-                'mac_address': self.mac_address,
-                'status': self.status,
-                'ip_addresses': [item['ip_address']
-                                 for item in self.fixed_ips]}
+        return {
+            'vif': self._vif,
+            'network_id': self.network_id,
+            'mac_address': self.mac_address,
+            'ip_addresses': [item['ip_address'] for item in self.fixed_ips],
+            'status': self.status
+        }
 
 
 class DhcpPort(Wrapper):
@@ -122,14 +131,15 @@ class DhcpPort(Wrapper):
 
     @property
     def data(self):
-        return {'vif': self._vif,
-                'network_id': self.network_id,
-                'mac_address': self.mac_address,
-                'device_id': self.device_id,
-                'status': self.status,
-                'type': 'dhcp',
-                'ip_addresses': [item['ip_address']
-                                 for item in self.fixed_ips]}
+        return {
+            'device_id': self.device_id,
+            'vif': self._vif,
+            'network_id': self.network_id,
+            'mac_address': self.mac_address,
+            'ip_addresses': [item['ip_address'] for item in self.fixed_ips],
+            'status': self.status,
+            'type': 'dhcp'
+        }
 
 
 class NovaInstance(Wrapper):
@@ -157,14 +167,17 @@ class NovaInstance(Wrapper):
             for a in addresses:
                 if a['OS-EXT-IPS:type'] == 'floating':
                     ips.setdefault(net, []).append(
-                        (a['addr'], a['OS-EXT-IPS-MAC:mac_addr']))
+                        (a['addr'], a['OS-EXT-IPS-MAC:mac_addr'])
+                    )
 
-        return {'id': self.id,
-                'name': self.name,
-                'status': self.status,
-                'type': 'vmon' if self.status == 'ACTIVE' else 'vmoff',
-                'floating_ips': ips,
-                'ports': [port.data for port in self.ports]}
+        return {
+            'id': self.id,
+            'name': self.name,
+            'floating_ips': ips,
+            'ports': [port.data for port in self.ports],
+            'status': self.status,
+            'type': 'vmon' if self.status == 'ACTIVE' else 'vmoff'
+        }
 
 
 class Topology(object):
