@@ -270,14 +270,12 @@ class Topology(object):
 
         # Links between networks and devices
         for port in self._ports:
-            if port.device_owner in ('compute:None',
-                                     'network:dhcp',
-                                     'network:router_interface'):
-                # The current user may not have the required
-                # permissions to see the target object
-                if port.device_id in ids:
-                    source = ids.index(port.device_id)
-                    target = ids.index(port.network_id)
-                    links.append({'source': source, 'target': target})
+            if port.device_id in ids and port.device_owner in (
+                    'compute:None',
+                    'network:dhcp',
+                    'network:router_interface'):
+                source = ids.index(port.device_id)
+                target = ids.index(port.network_id)
+                links.append({'source': source, 'target': target})
 
         return json.dumps({'nodes': nodes, 'links': links})
