@@ -2,49 +2,35 @@
 
 {% block main %}
 <div class="col-md-offset-4 col-md-4">
-  <div class="well well-lg" style="margin-top: 50px;">
-    <form class="form-horizontal" method="post">
+  <div class="well well-lg" style="margin-top: 60px;">
+    <form class="form" method="post">
       <div class="form-group">
-        <div class="col-md-offset-1 col-md-10">
-          <legend style="margin-bottom: 0px; padding-top: 25px;">Authentication</legend>
-        </div>
+        <legend>Authentication</legend>
       </div>
       <div class="form-group">
-        <div class="col-md-offset-1 col-md-10">
-          <input class="form-control" name="username" type="text" placeholder="Username" required>
-        </div>
+        <input class="form-control" name="username" type="text" placeholder="Username" required>
       </div>
       <div class="form-group">
-        <div class="col-md-offset-1 col-md-10">
-          <input class="form-control" name="password" type="password" placeholder="Password" required>
-        </div>
+        <input class="form-control" name="password" type="password" placeholder="Password" required>
       </div>
       <div class="form-group">
-        <div class="col-md-offset-1 col-md-10">
-          <input class="form-control" name="tenant_name" type="text" placeholder="Tenant name" required>
-        </div>
+        <input class="form-control" name="tenant_name" type="text" placeholder="Tenant name" required>
       </div>
       <div class="form-group">
-        <div class="col-md-offset-1 col-md-10">
-          <input class="form-control" name="auth_url" type="text" placeholder="Keystone URL" required>
-        </div>
+        <input class="form-control" name="auth_url" type="text" placeholder="Keystone URL" required>
       </div>
       <div class="form-group">
-        <div class="col-md-offset-1 col-md-10">
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
       </div>
       <div class="form-group">
-        <div class="col-md-offset-1 col-md-10">
-          {% if error %}
-          <div class="alert alert-danger alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            <strong>Title: </strong>{{ error.title }}<br/>
-            <strong>Message: </strong>{{ error.message }}<br/>
-            <strong>Code: </strong>{{ error.code }}<br/>
-          </div>
-          {% endif %}
+        {% if error %}
+        <div class="alert alert-danger alert-dismissable">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+          <strong>Title: </strong>{{ error.title }}<br/>
+          <strong>Message: </strong>{{ error.message }}<br/>
+          <strong>Code: </strong>{{ error.code }}<br/>
         </div>
+        {% endif %}
       </div>
     </form>
   </div>
