@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import itertools
 import json
 
 from neutronclient.neutron import client as neutron_client
@@ -221,39 +222,27 @@ class Topology(object):
     def build(self):
         """Returns a JSON representation of the topology."""
 
-        # Subnet to network mapping
         networks = self._networks
+        routers = self._routers
+        vms = self._vms
+
+        # Subnet to network mapping
         for network in networks:
             network.subnets = [subnet for subnet in self._subnets
                                if subnet.network_id == network.id]
 
-        # Router interface mapping
-        routers = self._routers
-        for router in routers:
-            router.ports = [port for port in self._ports
-                            if port.device_id == router.id]
-
-        # Nova instance interface mapping
-        vms = self._vms
-        for vm in vms:
-            vm.ports = [port for port in self._ports
-                        if port.device_id == vm.id]
+        # Router an Nova instance interface mapping
+        for item in itertools.chain(routers, vms):
+            item.ports = [port for port in self._ports
+                          if port.device_id == item.id]
 
         # We keep the ID of each node added to the
         # topology in order to generate the links
         ids, nodes, links = [], [], []
 
-        for network in networks:
-            ids.append(network.id)
-            nodes.append(network.data)
-
-        for router in routers:
-            ids.append(router.id)
-            nodes.append(router.data)
-
-        for vm in vms:
-            ids.append(vm.id)
-            nodes.append(vm.data)
+        for item in itertools.chain(networks, routers, vms):
+            ids.append(item.id)
+            nodes.append(item.data)
 
         for dhcp_port in self._dhcp_ports:
             ids.append(dhcp_port.device_id)
