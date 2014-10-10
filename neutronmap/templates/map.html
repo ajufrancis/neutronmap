@@ -76,22 +76,29 @@ var svg;
 
 // Get a specific size for each network element
 function getNodeSize(d) {
-    if (d.type == "external" || d.type == "network")
-        { return 10000; }
-    else if (d.type == "router")
-        { return 8000; }
-    else
-        { return 6000; }
+    switch (d.type) {
+        case "external":
+        case "network":
+            return 10000;
+        case "router":
+            return 8000;
+        default:
+            return 6000;
+    }
 }
 
 // Select the appropriate template to render element details
 function getNodeTemplate(d) {
-    if (d.type == "external" || d.type == "network")
-        { return "#networkTemplate"; }
-    else if (d.type == "vmon" || d.type == "vmoff")
-        { return "#vmTemplate"; }
-    else
-        { return "#" + d.type + "Template"; }
+    switch (d.type) {
+        case "external":
+        case "network":
+            return "#networkTemplate";
+        case "vmon":
+        case "vmoff":
+            return "#vmTemplate";
+        default:
+            return "#" + d.type + "Template";
+    }
 }
 
 // Display node info on dblclick.
